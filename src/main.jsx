@@ -1,25 +1,19 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.jsx";
-
-window.onerror = (msg, src, line, col, err) => {
-  document.body.style.background = "#0D0D0F";
-  document.body.style.color = "#E8FF47";
-  document.body.style.fontFamily = "monospace";
-  document.body.style.padding = "24px";
-  document.body.innerHTML = `<h2>Error</h2><pre style="white-space:pre-wrap;font-size:13px;color:#fff">${msg}\n\n${err?.stack || ""}</pre>`;
-};
-
-window.onunhandledrejection = (e) => {
-  document.body.style.background = "#0D0D0F";
-  document.body.style.color = "#E8FF47";
-  document.body.style.fontFamily = "monospace";
-  document.body.style.padding = "24px";
-  document.body.innerHTML = `<h2>Unhandled Promise Error</h2><pre style="white-space:pre-wrap;font-size:13px;color:#fff">${e.reason?.message}\n\n${e.reason?.stack || ""}</pre>`;
-};
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    <div style={{
+      background: "#080809",
+      color: "#E8FF47",
+      fontFamily: "monospace",
+      padding: 40,
+      minHeight: "100vh"
+    }}>
+      <h1>CONTR-ACT.</h1>
+      <p>App is loading correctly.</p>
+      <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? "✓ Found" : "✗ Missing"}</p>
+      <p>Supabase Key: {import.meta.env.VITE_SUPABASE_ANON_KEY ? "✓ Found" : "✗ Missing"}</p>
+    </div>
   </StrictMode>
 );
