@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-const SUPABASE_URL = "https://zaqtaznltugajkuybcoh.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphcXRhem5sdHVnYWprdXliY29oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDIxMDQsImV4cCI6MjA5MTUxODEwNH0.q6cpdJjWnvvqtzzAY0hxOHZ6WihJfpbMyVcVZFhEAAE";
+const SUPABASE_URL = "https://qmlmqzcrlekaxlkkieml.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtbG1xemNybGVrYXhsamtpZW1sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMTM5NjIsImV4cCI6MjA5MTY4OTk2Mn0.Q2MjF9fYo_CFZVm2bL7wRyJvggKt4X55mWT7hEkgUkE";
+
+const supabase = window.supabase?.createClient
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
 
 function getDeviceId() {
   let id = localStorage.getItem("fc_device_id");
@@ -63,7 +67,207 @@ function save(k, v) {
 function genId() {
   return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
 }
+function AuthScreen() {
+  const [mode, setMode] = useState("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
 
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!supabase) {
+      setErr("Supabase is not loaded yet.");
+      return;
+    }
+
+    setLoading(true);
+    setErr("");
+    setMsg("");
+
+    try {
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+        });
+        if (error) throw error;
+        setMsg("Account created. You can sign in now.");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) throw error;
+      }
+    } catch (error) {
+      setErr(error.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <>
+      <style>{CSS}</style>
+      <div className="app">
+        <div
+          className="screen"
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 72,
+                height: 72,
+                borderRadius: 18,
+                background: "rgba(232,255,71,0.1)",
+                border: "1px solid rgba(232,255,71,0.3)",
+                marginBottom: 18,
+                fontFamily: "Syne, sans-serif",
+                fontWeight: 800,
+                fontSize: 26,
+                color: "var(--accent)",
+              }}
+            >
+              C
+            </div>
+
+            <h1
+              style={{
+                fontFamily: "Syne",
+                fontSize: 34,
+                fontWeight: 800,
+                marginBottom: 8,
+              }}
+            >
+              CONTR-ACT.
+            </h1>
+
+            <p
+              style={{
+                color: "var(--text2)",
+                fontSize: 15,
+                lineHeight: 1.6,
+                maxWidth: 320,
+                margin: "0 auto",
+              }}
+            >
+              Sign in to save your progress and keep your sessions across devices.
+            </p>
+          </div>
+
+          <div className="tabs" style={{ marginBottom: 20 }}>
+            <button
+              className={`tab ${mode === "signin" ? "active" : ""}`}
+              onClick={() => {
+                setMode("signin");
+                setErr("");
+                setMsg("");
+              }}
+            >
+              Sign In
+            </button>
+            <button
+              className={`tab ${mode === "signup" ? "active" : ""}`}
+              onClick={() => {
+                setMode("signup");
+                setErr("");
+                setMsg("");
+              }}
+            >
+              Create Account
+            </button>
+          </div>
+
+          <div className="card card-accent" style={{ marginBottom: 18 }}>
+            <div className="text-xs mb-8">
+              {mode === "signin" ? "WELCOME BACK" : "CREATE YOUR ACCOUNT"}
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <label className="label">Email</label>
+              <input
+                className="input"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{ marginBottom: 14 }}
+                required
+              />
+
+              <label className="label">Password</label>
+              <input
+                className="input"
+                type="password"
+                autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ marginBottom: 14 }}
+                required
+                minLength={6}
+              />
+
+              {err && (
+                <div
+                  style={{
+                    background: "rgba(255,107,71,0.12)",
+                    border: "1px solid rgba(255,107,71,0.35)",
+                    color: "var(--danger)",
+                    borderRadius: 10,
+                    padding: "12px 14px",
+                    fontSize: 13,
+                    marginBottom: 12,
+                  }}
+                >
+                  {err}
+                </div>
+              )}
+
+              {msg && (
+                <div
+                  style={{
+                    background: "rgba(71,255,179,0.12)",
+                    border: "1px solid rgba(71,255,179,0.35)",
+                    color: "var(--success)",
+                    borderRadius: 10,
+                    padding: "12px 14px",
+                    fontSize: 13,
+                    marginBottom: 12,
+                  }}
+                >
+                  {msg}
+                </div>
+              )}
+
+              <button className="btn btn-primary" type="submit" disabled={loading}>
+                {loading
+                  ? mode === "signin"
+                    ? "Signing In..."
+                    : "Creating Account..."
+                  : mode === "signin"
+                  ? "Sign In"
+                  : "Create Account"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
 function formatTime(s) {
   const m = Math.floor(s / 60);
   const sc = s % 60;
@@ -1479,7 +1683,25 @@ export default function App(){
   const [sessionOutcome,setSessionOutcome]=useState(null);
   const [showPlan,setShowPlan]=useState(false);
   const [highlightPlanned,setHighlightPlanned]=useState(false);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
+  useEffect(() => {
+    if (!supabase) return;
+
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      setAuthLoading(false);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      listener?.subscription?.unsubscribe();
+    };
+  }, []);
   const finishOnboard=()=>save(SK.ONBOARDED,true);
 
   const handleOnboardStartNow=()=>{finishOnboard();setOnboarded(true);setSetupStep("task");};
@@ -1526,7 +1748,22 @@ export default function App(){
       {setupStep==="review"&&<ContractReview session={sessionDraft} onStart={handleSessionStart} onBack={()=>setSetupStep("mode")}/>}
     </div></>
   );
+  if (authLoading) {
+    return (
+      <>
+        <style>{CSS}</style>
+        <div className="app">
+          <div className="screen" style={{ textAlign: "center", marginTop: 100 }}>
+            Loading...
+          </div>
+        </div>
+      </>
+    );
+  }
 
+  if (!user) {
+    return <AuthScreen />;
+  }
   return(
     <><style>{CSS}</style>
     <div className="app">
